@@ -63,9 +63,17 @@ def analyze_users_data(users_data):
     genders_count = defaultdict(lambda: defaultdict(int))
     genders_index = set()
 
+    age_data = defaultdict(lambda: defaultdict(int))
+
     for user in users_data:
         destination = user[USERS_COUNTRY_DESTINATION]
-        gender, age = user[USERS_GENDER], user[USERS_AGE]
+        gender = user[USERS_GENDER]
+
+        age = user[USERS_AGE]
+        if age == None or age == '':
+            age = -1
+        else:
+            age = int(float(age))
         signup_method, signup_flow = user[USERS_SIGNUP_METHOD], user[USERS_SIGNUP_FLOW]
         # if destination == 'NDF':
         #     continue
@@ -93,16 +101,34 @@ def analyze_users_data(users_data):
             else:
                 gender_count[gender] += 1
 
+        # count age
+        age_range = get_age_range(age)
+        if destination not in age_data:
+            age_dict = defaultdict(int)
+            age_dict.setdefault(age_range, 1)
+            age_data.setdefault(destination, age_dict)
+        else:
+            age_dict = age_data.get(destination)
+            if age_range not in age_dict:
+                age_dict.setdefault(age_range, 1)
+            else:
+                age_dict[age_range] += 1
+
+
     # draw destination and #users figure
     # analyze_general_users_data(countries_count, countries_index)
     # # draw destination and gender figure
     # analyze_gender_users_data(genders_index, genders_count, countries_index)
     # draw destination and age figure
+
     # analyze_age_users_data(users_data, countries_index, destinations_data)
 
     ## draw destination and account create date figure
-    print destinations_data.items()
-    analyze_account_date_user_data(users_data, destinations_data, countries_index)
+    analyze_account_date_user_data(users_data, countries_index)
+
+    # analyze_age_users_data(age_data, countries_index)
+    analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_count)
+
 
 
 def analyze_general_users_data(countries_count, countries_index):
@@ -151,24 +177,90 @@ def analyze_gender_users_data(genders_index, genders_count, countries_index):
     plt.savefig('../images/destination_users_of_gender.png')
 
 
-def analyze_age_users_data(user_data, countries_index, destinations_data):
+def get_age_range(age):
+    if age < 0:
+        return -1
+    elif age >= 100:
+        return 10
+    else:
+        return age / 10
+
+def get_age_range_desc(age_range):
+    if age_range == -1:
+        return '-unknown-'
+    elif age_range == 10:
+        return '>=100'
+    else:
+        return str(age_range * 10) + '-' + str(age_range * 10 + 9)
+
+
+def get_age_range_list():
+    return range(-1, 11)
+
+
+def analyze_age_users_data(age_data, countries_index, countries_count):
     plt.cla()
-    # for user in users_data:
-    #     destination, age = user[USERS_COUNTRY_DESTINATION], float(user[USERS_AGE])
-    #     if destination == None:
-    #         destination = 'NDF'
-    #     plt.plot(destinations_data.get(destination), age)
-    # plt.xticks([x + 0.5 for x in range(len(countries_index))], countries_index, size='small')
-    # plt.xlabel('Destination')
-    # plt.ylabel('age')
-    # plt.title('Destination and age in training data')
-    plt.show()
+    colors = ['r', 'k', 'b', 'g', 'c', 'm', 'y', 'b', 'k', 'k', 'k', 'r']
+    index = 0
+    width = 0.08
+    age_ranges = []
+    age_rects_data = []
+    age_range_list = get_age_range_list()
+    for age_range in age_range_list:
+        age_count_list = []
+        for i in range(len(countries_index)):
+            destination = countries_index[i]
+            if destination == 'NDF':
+                continue
+            count = age_data.get(destination).get(age_range)
+            if count == None:
+                count = 0
+
+            age_count_list.append(float(count) / countries_count[i])
+
+        rects = plt.bar([x + index * width for x in range(len(age_count_list))],
+                        age_count_list, width, color=colors[index])
+        index += 1
+        age_rects_data.append(rects[0])
+        age_ranges.append(get_age_range_desc(age_range))
+
+    plt.xticks([x + 0.5 for x in range(len(countries_index) - 1)], countries_index[1:], size='small')
+    plt.legend(age_rects_data, age_ranges)
+    plt.xlabel('Destination')
+    plt.ylabel('#users of age')
+    plt.title('Destination and #users of age in training data')
+    # plt.show()
+    plt.savefig('../images/destination_users_of_age.png')
 
 
+def analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_count):
+    age_list = [2, 3, 4, 5]
+    for age_range in age_list:
+        plt.cla()
+        age_count_list = []
+        for i in range(len(countries_index)):
+            destination = countries_index[i]
+            if destination == 'NDF':
+                continue
+            count = age_data.get(destination).get(age_range)
+            if count == None:
+                count = 0
+            age_count_list.append(float(count) / countries_count[i])
 
-def analyze_account_date_user_data(users_data, destinations_data, countries_index):
+        rects = plt.bar(range(len(age_count_list)), age_count_list, 0.5, color='b')
+        # auto_label_float(rects)
+
+        plt.xticks([x + 0.5 for x in range(len(countries_index) - 1)], countries_index[1:], size='small')
+        plt.xlabel('Destination')
+        plt.ylabel('#users of age')
+        plt.title('Destination and #users of age(' + get_age_range_desc(age_range) + ') in training data')
+        # plt.show()
+        plt.savefig('../images/destination_users_of_age(' + get_age_range_desc(age_range) + ').png')
+
+
+def analyze_account_date_user_data(users_data, countries_index):
     color_set = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
+    year = 2010
     destination_account_date = defaultdict(lambda: defaultdict(int))
     for destinations in countries_index:
         local = defaultdict(int)
@@ -179,34 +271,40 @@ def analyze_account_date_user_data(users_data, destinations_data, countries_inde
     for user in users_data:
         destination = user[USERS_COUNTRY_DESTINATION]
         account_date = user[USERS_DATE_ACCOUNT_CREATED].split('-')
-        month = int(account_date[1])
-        destination_account_date[destination][month] += 1
-    print destination_account_date.items()
-    country_list = []
+        if account_date[0] == '2013':
+            month = int(account_date[1])
+            destination_account_date[destination][month] += 1
 
+    rects_data = []
     for i in range(1, 13):
         country_month_list = []
         for k in countries_index:
             country_month_list.append(destination_account_date[k][i])
         print country_month_list
         width = 1.0 / 13
-        plt.bar([x + (i - 1) * width for x in range(len(countries_index))], country_month_list, width, color = color_set[i % 7])
+        rects = plt.bar([x + (i - 1) * width for x in range(len(countries_index))], country_month_list, width, color = color_set[i % 7])
+        rects_data.append(rects[0])
     plt.xticks([x + 0.5 for x in range(len(countries_index))], countries_index[0:], size='small')
-    plt.show()
-    ## plot
-
-    #
-
-
-
-
-
+    #plt.show()
+    month_list = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+    plt.legend(rects_data, month_list)
+    plt.xlabel('Destination')
+    plt.ylabel('#number of users')
+    plt.title('Destination and #users of month in training data 2013')
+    plt.savefig('../images/destination_users_of_month_2013.png')
 
 
 def auto_label(rects):
    for rect in rects:
         height = rect.get_height()
         plt.text(rect.get_x() + rect.get_width() / 5., 1.03 * height, '%d' % int(height),
+                 ha='center', va='bottom')
+
+
+def auto_label_float(rects):
+   for rect in rects:
+        height = rect.get_height()
+        plt.text(rect.get_x() + rect.get_width() / 5., 1.03 * height, '%f' % round(float(height), 3),
                  ha='center', va='bottom')
 
 get_users_data()
