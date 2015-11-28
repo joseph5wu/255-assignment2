@@ -46,6 +46,7 @@ USERS_FIRST_BROWSER = 14
 USERS_COUNTRY_DESTINATION = 15
 
 users_data = []
+
 def get_users_data():
     with open('../data/train_users.csv', 'rb') as users_file:
         reader = csv.reader(users_file)
@@ -396,8 +397,6 @@ def analyze_distance_age(countries_dict, users_data):
     plt.title('age_range and average distance in user data')
     # plt.show()
     plt.savefig('../images/age_range_and_average_distance.png')
-
-
 
 # ----- reading age_gender_bkts file into age/gender data -----
 BKTS_AGE_BUCKET = 0
