@@ -9,12 +9,13 @@ import numpy as np
 COUNTRIES_COUNTRY_DESTINATION = 0
 COUNTRIES_LAT_DESTINATION = 1
 COUNTRIES_LNG_DESTINATION = 2
-COUNTRIES_DISTANCE_KN = 3
+COUNTRIES_DISTANCE_KM = 3
 COUNTRIES_DESTINATION_KM2 = 4
 COUNTRIES_DESTINATION_LAN = 5
 COUNTRIES_DESTINATION_LEVENSHTEIN_DISTANCE = 6
 
 countries_data = []
+countries_dict = defaultdict(list)
 def get_countries_data():
     with open('../data/countries.csv', 'rb') as countries_file:
         reader = csv.reader(countries_file)
@@ -24,6 +25,7 @@ def get_countries_data():
             if counts == 1:
                 continue
             countries_data.append(row)
+            countries_dict.setdefault(row[COUNTRIES_COUNTRY_DESTINATION], row)
 
 # ----- reading train_users file into countries_data -----
 USERS_ID = 0
@@ -55,25 +57,28 @@ def get_users_data():
             users_data.append(row)
 
 
+countries_index = []
+countries_count = []
 def analyze_users_data(users_data):
     destinations_data = defaultdict(int)
-    countries_index = []
-    countries_count = []
     index = 0
     genders_count = defaultdict(lambda: defaultdict(int))
     genders_index = set()
     age_data = defaultdict(lambda: defaultdict(int))
+    language_data = defaultdict(lambda: defaultdict(int))
+    language_list = set()
 
     for user in users_data:
         destination = user[USERS_COUNTRY_DESTINATION]
         gender = user[USERS_GENDER]
 
         age = user[USERS_AGE]
-        if age == None or age == '':
+        if age is None or age == '':
             age = -1
         else:
             age = int(float(age))
-        signup_method, signup_flow = user[USERS_SIGNUP_METHOD], user[USERS_SIGNUP_FLOW]
+
+        language = user[USERS_LANGUAGE]
         # if destination == 'NDF':
         #     continue
 
@@ -113,6 +118,19 @@ def analyze_users_data(users_data):
             else:
                 age_dict[age_range] += 1
 
+        # count language
+        language_list.add(language)
+        if destination not in language_data:
+            language_dict = defaultdict(int)
+            language_dict.setdefault(language, 1)
+            language_data.setdefault(destination, language_dict)
+        else:
+            language_dict = language_data.get(destination)
+            if language not in language_dict:
+                language_dict.setdefault(language, 1)
+            else:
+                language_dict[language] += 1
+
 
     # draw destination and #users figure
     # analyze_general_users_data(countries_count, countries_index)
@@ -120,8 +138,8 @@ def analyze_users_data(users_data):
     # analyze_gender_users_data(genders_index, genders_count, countries_index)
     # draw destination and age figure
     # analyze_age_users_data(age_data, countries_index)
-    analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_count)
-
+    # analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_count)
+    # analyze_language_users_data(language_list, language_data, countries_index, countries_count)
 
 def analyze_general_users_data(countries_count, countries_index):
     plt.cla()
@@ -177,6 +195,7 @@ def get_age_range(age):
     else:
         return age / 10
 
+
 def get_age_range_desc(age_range):
     if age_range == -1:
         return '-unknown-'
@@ -205,7 +224,7 @@ def analyze_age_users_data(age_data, countries_index, countries_count):
             if destination == 'NDF':
                 continue
             count = age_data.get(destination).get(age_range)
-            if count == None:
+            if count is None:
                 count = 0
 
             age_count_list.append(float(count) / countries_count[i])
@@ -250,6 +269,36 @@ def analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_c
         plt.savefig('../images/destination_users_of_age(' + get_age_range_desc(age_range) + ').png')
 
 
+def analyze_language_users_data(language_list, language_data, countries_index, countries_count):
+    plt.cla()
+    colors = ['r', 'b', 'g', 'c', 'm', 'y']
+    index = 0
+    width = 1. / len(language_list)
+    language_type = []
+    language_rects_data = []
+    for language in language_list:
+        language_count_list = []
+        for i in range(len(countries_index)):
+            destination = countries_index[i]
+            count = language_data.get(destination).get(language)
+            if count is None:
+                count = 0
+            language_count_list.append(float(count) / countries_count[i])
+
+        rects = plt.bar([x + index * width for x in range(len(language_count_list))],
+                        language_count_list, width, color=colors[index % len(colors)])
+        index += 1
+        language_type.append(language)
+        language_rects_data.append(rects[0])
+
+    plt.xticks([x + 0.5 for x in range(len(countries_index))], countries_index, size='small')
+    plt.legend(language_rects_data, language_type)
+    plt.xlabel('Destination')
+    plt.ylabel('#users of one language/ total #users in one destination')
+    plt.title('Destination and #users of one language in training data')
+    # plt.show()
+    plt.savefig('../images/destination_users_of_language.png')
+
 
 def auto_label(rects):
    for rect in rects:
@@ -264,31 +313,47 @@ def auto_label_float(rects):
         plt.text(rect.get_x() + rect.get_width() / 5., 1.03 * height, '%f' % round(float(height), 3),
                  ha='center', va='bottom')
 
-get_users_data()
-analyze_users_data(users_data)
 
-# for i in range(len(countries_index)):
-#     country = countries_index[i]
-#     country_data = destinations_data.get(country)
-#     plt.plot(i, country_data)
+def analyze_distance_age(countries_dict, users_data):
+    age_distance = defaultdict(lambda: defaultdict(float))
+    for user in users_data:
+        destination = user[USERS_COUNTRY_DESTINATION]
+        if destination == 'US':
+            continue
+        age = user[USERS_AGE]
+        if age is None or age == '':
+            age = -1
+        else:
+            age = int(float(age))
 
-# destinations = []
-# destinations_name = []
-# destinations_index = defaultdict(int)
-# index = 0
-# for user in users_data:
-#     destination = user[USERS_COUNTRY_DESTINATION]
-#     if destination == 'NDF':
-#         continue
-#     if destination not in destinations_index:
-#         destinations_index.setdefault(destination, index)
-#         destinations_name.append(destination)
-#         index += 1
-#     destination_index = destinations_index.get(destination)
-#     destinations.append(destination_index)
-# plt.hist(destinations)
-# plt.xticks(range(len(destinations_name)), destinations_name)
-# plt.show()
+        age_range = get_age_range(age)
+        if countries_dict.get(destination) is None:
+            continue
+        distance = float(countries_dict.get(destination)[COUNTRIES_DISTANCE_KM])
+
+        if age_range not in age_distance:
+            age_data = defaultdict(float)
+            age_data.setdefault('total', distance)
+            age_data.setdefault('count', 1)
+            age_distance.setdefault(age_range, age_data)
+        else:
+            age_data = age_distance.get(age_range)
+            age_data['total'] += distance
+            age_data['count'] += 1
+
+    result = []
+    for age_range in age_distance:
+        age_data = age_distance.get(age_range)
+        result.append(age_data['total'] / age_data['count'])
+    plt.bar(range(len(result)), result)
+    plt.xticks([x + 0.5 for x in range(len(age_distance.keys()))], age_distance.keys(), size='small')
+    plt.xlabel('age_range')
+    plt.ylabel('average distance')
+    plt.title('age_range and average distance in user data')
+    # plt.show()
+    plt.savefig('../images/age_range_and_average_distance.png')
+
+
 
 # ----- reading age_gender_bkts file into age/gender data -----
 BKTS_AGE_BUCKET = 0
@@ -344,6 +409,45 @@ def get_bkts_data():
                     age_set = country_dict.get(destination)
                     age_set.setdefault(age, population)
 
+
+def analyze_age_bkts_data(age_bkts_data):
+    destination_dict = defaultdict(lambda: defaultdict(float))
+
+    for age in age_bkts_data:
+        destination_data = age_bkts_data.get(age)
+        for dest in destination_data:
+            total = 0
+            youth_total = 0
+            destination = destination_data.get(dest)
+            for gender in destination:
+                total += destination[gender]
+                if age == '20-24' or age == '25-29' or age == '30-34' or age == '35-39' or age == '40-44' or age == '45-49' or age == '50-54':
+                    youth_total += destination[gender]
+
+            if dest not in destination_dict:
+                dict = defaultdict(float)
+                dict.setdefault('total', total)
+                dict.setdefault('youth_total', youth_total)
+                destination_dict.setdefault(dest, dict)
+            else:
+                dict = destination_dict.get(dest)
+                dict['total'] += total
+                dict['youth_total'] += youth_total
+
+    result = []
+    for dest in destination_dict:
+        data = destination_dict.get(dest)
+        result.append(float(data['youth_total']) / data['total'])
+    plt.bar(range(len(result)), result)
+    plt.xticks([x + 0.5 for x in range(len(destination_dict.keys()))], destination_dict.keys(), size='small')
+    plt.xlabel('Destination')
+    plt.ylabel('ration of population in 20-55')
+    plt.title('Destination and ration of population in 20-55 in age bkts data')
+    # plt.show()
+    plt.savefig('../images/destination_ration_of_youth_population.png')
+
+
+
 # ----- reading session file into session_data -----
 SESSION_USER_ID = 0
 SESSION_ACTION = 1
@@ -379,3 +483,11 @@ def get_session_data():
                     action_dict.setdefault(action, secs)
                 else:
                     action_dict[action] += secs
+
+get_countries_data()
+get_users_data()
+# analyze_users_data(users_data)
+analyze_distance_age(countries_dict, users_data)
+
+# get_bkts_data()
+# analyze_age_bkts_data(age_bkts_data)
