@@ -119,7 +119,8 @@ def analyze_users_data(users_data):
     # # draw destination and gender figure
     # analyze_gender_users_data(genders_index, genders_count, countries_index)
     # draw destination and age figure
-    analyze_age_users_data(age_data, countries_index)
+    # analyze_age_users_data(age_data, countries_index)
+    analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_count)
 
 
 def analyze_general_users_data(countries_count, countries_index):
@@ -189,7 +190,7 @@ def get_age_range_list():
     return range(-1, 11)
 
 
-def analyze_age_users_data(age_data, countries_index):
+def analyze_age_users_data(age_data, countries_index, countries_count):
     plt.cla()
     colors = ['r', 'k', 'b', 'g', 'c', 'm', 'y', 'b', 'k', 'k', 'k', 'r']
     index = 0
@@ -199,13 +200,15 @@ def analyze_age_users_data(age_data, countries_index):
     age_range_list = get_age_range_list()
     for age_range in age_range_list:
         age_count_list = []
-        for destination in countries_index:
+        for i in range(len(countries_index)):
+            destination = countries_index[i]
             if destination == 'NDF':
                 continue
             count = age_data.get(destination).get(age_range)
             if count == None:
                 count = 0
-            age_count_list.append(count)
+
+            age_count_list.append(float(count) / countries_count[i])
 
         rects = plt.bar([x + index * width for x in range(len(age_count_list))],
                         age_count_list, width, color=colors[index])
@@ -222,10 +225,43 @@ def analyze_age_users_data(age_data, countries_index):
     plt.savefig('../images/destination_users_of_age.png')
 
 
+def analyze_age_users_data_in_some_ranges(age_data, countries_index, countries_count):
+    age_list = [2, 3, 4, 5]
+    for age_range in age_list:
+        plt.cla()
+        age_count_list = []
+        for i in range(len(countries_index)):
+            destination = countries_index[i]
+            if destination == 'NDF':
+                continue
+            count = age_data.get(destination).get(age_range)
+            if count == None:
+                count = 0
+            age_count_list.append(float(count) / countries_count[i])
+
+        rects = plt.bar(range(len(age_count_list)), age_count_list, 0.5, color='b')
+        # auto_label_float(rects)
+
+        plt.xticks([x + 0.5 for x in range(len(countries_index) - 1)], countries_index[1:], size='small')
+        plt.xlabel('Destination')
+        plt.ylabel('#users of age')
+        plt.title('Destination and #users of age(' + get_age_range_desc(age_range) + ') in training data')
+        # plt.show()
+        plt.savefig('../images/destination_users_of_age(' + get_age_range_desc(age_range) + ').png')
+
+
+
 def auto_label(rects):
    for rect in rects:
         height = rect.get_height()
         plt.text(rect.get_x() + rect.get_width() / 5., 1.03 * height, '%d' % int(height),
+                 ha='center', va='bottom')
+
+
+def auto_label_float(rects):
+   for rect in rects:
+        height = rect.get_height()
+        plt.text(rect.get_x() + rect.get_width() / 5., 1.03 * height, '%f' % round(float(height), 3),
                  ha='center', va='bottom')
 
 get_users_data()
