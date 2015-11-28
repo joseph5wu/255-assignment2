@@ -62,6 +62,7 @@ def analyze_users_data(users_data):
     index = 0
     genders_count = defaultdict(lambda: defaultdict(int))
     genders_index = set()
+
     for user in users_data:
         destination = user[USERS_COUNTRY_DESTINATION]
         gender, age = user[USERS_GENDER], user[USERS_AGE]
@@ -97,7 +98,12 @@ def analyze_users_data(users_data):
     # # draw destination and gender figure
     # analyze_gender_users_data(genders_index, genders_count, countries_index)
     # draw destination and age figure
-    analyze_age_users_data(users_data, countries_index, destinations_data)
+    # analyze_age_users_data(users_data, countries_index, destinations_data)
+
+    ## draw destination and account create date figure
+    print destinations_data.items()
+    analyze_account_date_user_data(users_data, destinations_data, countries_index)
+
 
 def analyze_general_users_data(countries_count, countries_index):
     plt.cla()
@@ -157,6 +163,44 @@ def analyze_age_users_data(user_data, countries_index, destinations_data):
     # plt.ylabel('age')
     # plt.title('Destination and age in training data')
     plt.show()
+
+
+
+def analyze_account_date_user_data(users_data, destinations_data, countries_index):
+    color_set = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+
+    destination_account_date = defaultdict(lambda: defaultdict(int))
+    for destinations in countries_index:
+        local = defaultdict(int)
+        for i in range(1, 13):
+            local.setdefault(i, 0)
+        destination_account_date.setdefault(destinations, local)
+
+    for user in users_data:
+        destination = user[USERS_COUNTRY_DESTINATION]
+        account_date = user[USERS_DATE_ACCOUNT_CREATED].split('-')
+        month = int(account_date[1])
+        destination_account_date[destination][month] += 1
+    print destination_account_date.items()
+    country_list = []
+
+    for i in range(1, 13):
+        country_month_list = []
+        for k in countries_index:
+            country_month_list.append(destination_account_date[k][i])
+        print country_month_list
+        width = 1.0 / 13
+        plt.bar([x + (i - 1) * width for x in range(len(countries_index))], country_month_list, width, color = color_set[i % 7])
+    plt.xticks([x + 0.5 for x in range(len(countries_index))], countries_index[0:], size='small')
+    plt.show()
+    ## plot
+
+    #
+
+
+
+
+
 
 
 def auto_label(rects):
