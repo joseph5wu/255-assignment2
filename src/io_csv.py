@@ -54,6 +54,7 @@ def get_users_data():
                 continue
             users_data.append(row)
 
+
 def analyze_users_data(users_data):
     destinations_data = defaultdict(int)
     countries_index = []
@@ -92,38 +93,71 @@ def analyze_users_data(users_data):
                 gender_count[gender] += 1
 
     # draw destination and #users figure
-    # rects = plt.bar(range(len(countries_count)), countries_count, align='center')
-    # auto_label(rects)
-    # plt.xticks(range(len(countries_index)), countries_index, size='small')
-    # plt.xlabel('Destination')
-    # plt.ylabel('#users')
-    # plt.title('Destination and #users in training data')
-    #
-    # # plt.show()
-    # plt.savefig('../images/destination_users.png')
+    # analyze_general_users_data(countries_count, countries_index)
+    # # draw destination and gender figure
+    # analyze_gender_users_data(genders_index, genders_count, countries_index)
+    # draw destination and age figure
+    analyze_age_users_data(users_data, countries_index, destinations_data)
 
+def analyze_general_users_data(countries_count, countries_index):
     plt.cla()
-    # draw destination and gender figure
+    rects = plt.bar(range(len(countries_count)), countries_count, align='center')
+    auto_label(rects)
+    plt.xticks(range(len(countries_index)), countries_index, size='small')
+    plt.xlabel('Destination')
+    plt.ylabel('#users')
+    plt.title('Destination and #users in training data')
+
+    # plt.show()
+    plt.savefig('../images/destination_users.png')
+
+
+def analyze_gender_users_data(genders_index, genders_count, countries_index):
+    plt.cla()
     colors_set = ['r', 'y', 'g', 'b']
     index = 0
-    width = 0.2
+    width = 0.25
+    gender_types = []
+    gender_data = []
     for gender in genders_index:
         genders_count_list = []
         for destination in countries_index:
+            if destination == 'NDF':
+                continue
             count = genders_count.get(destination).get(gender)
             if count == None:
                 count = 0
             genders_count_list.append(count)
-        print(gender, genders_count_list)
+        # print(gender, genders_count_list)
         rects = plt.bar([x + index * width for x in range(len(genders_count_list))],
                         genders_count_list, width, color=colors_set[index])
         index += 1
+        gender_data.append(rects[0])
+        gender_types.append(gender)
         # auto_label(rects)
-    plt.xticks(range(len(countries_index)), countries_index, size='small')
+    plt.xticks([x + 0.5 for x in range(len(countries_index) - 1)], countries_index[1:], size='small')
+    plt.legend(gender_data, gender_types)
+    plt.xlabel('Destination')
+    plt.ylabel('#users of gender')
+    plt.title('Destination and #users of gender in training data')
+
+    # plt.show()
+    plt.savefig('../images/destination_users_of_gender.png')
+
+
+def analyze_age_users_data(user_data, countries_index, destinations_data):
+    plt.cla()
+    # for user in users_data:
+    #     destination, age = user[USERS_COUNTRY_DESTINATION], float(user[USERS_AGE])
+    #     if destination == None:
+    #         destination = 'NDF'
+    #     plt.plot(destinations_data.get(destination), age)
+    # plt.xticks([x + 0.5 for x in range(len(countries_index))], countries_index, size='small')
     # plt.xlabel('Destination')
-    # plt.ylabel('#users')
-    # plt.title('Destination and #users in training data')
+    # plt.ylabel('age')
+    # plt.title('Destination and age in training data')
     plt.show()
+
 
 def auto_label(rects):
    for rect in rects:
