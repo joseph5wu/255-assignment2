@@ -62,9 +62,17 @@ def analyze_users_data(users_data):
     index = 0
     genders_count = defaultdict(lambda: defaultdict(int))
     genders_index = set()
+    age_data = defaultdict(lambda: defaultdict(int))
+
     for user in users_data:
         destination = user[USERS_COUNTRY_DESTINATION]
-        gender, age = user[USERS_GENDER], user[USERS_AGE]
+        gender = user[USERS_GENDER]
+
+        age = user[USERS_AGE]
+        if age == None or age == '':
+            age = -1
+        else:
+            age = int(float(age))
         signup_method, signup_flow = user[USERS_SIGNUP_METHOD], user[USERS_SIGNUP_FLOW]
         # if destination == 'NDF':
         #     continue
@@ -92,12 +100,27 @@ def analyze_users_data(users_data):
             else:
                 gender_count[gender] += 1
 
+        # count age
+        age_range = get_age_range(age)
+        if destination not in age_data:
+            age_dict = defaultdict(int)
+            age_dict.setdefault(age_range, 1)
+            age_data.setdefault(destination, age_dict)
+        else:
+            age_dict = age_data.get(destination)
+            if age_range not in age_dict:
+                age_dict.setdefault(age_range, 1)
+            else:
+                age_dict[age_range] += 1
+
+
     # draw destination and #users figure
     # analyze_general_users_data(countries_count, countries_index)
     # # draw destination and gender figure
     # analyze_gender_users_data(genders_index, genders_count, countries_index)
     # draw destination and age figure
-    analyze_age_users_data(users_data, countries_index, destinations_data)
+    analyze_age_users_data(age_data, countries_index)
+
 
 def analyze_general_users_data(countries_count, countries_index):
     plt.cla()
@@ -145,18 +168,58 @@ def analyze_gender_users_data(genders_index, genders_count, countries_index):
     plt.savefig('../images/destination_users_of_gender.png')
 
 
-def analyze_age_users_data(user_data, countries_index, destinations_data):
+def get_age_range(age):
+    if age < 0:
+        return -1
+    elif age >= 100:
+        return 10
+    else:
+        return age / 10
+
+def get_age_range_desc(age_range):
+    if age_range == -1:
+        return '-unknown-'
+    elif age_range == 10:
+        return '>=100'
+    else:
+        return str(age_range * 10) + '-' + str(age_range * 10 + 9)
+
+
+def get_age_range_list():
+    return range(-1, 11)
+
+
+def analyze_age_users_data(age_data, countries_index):
     plt.cla()
-    # for user in users_data:
-    #     destination, age = user[USERS_COUNTRY_DESTINATION], float(user[USERS_AGE])
-    #     if destination == None:
-    #         destination = 'NDF'
-    #     plt.plot(destinations_data.get(destination), age)
-    # plt.xticks([x + 0.5 for x in range(len(countries_index))], countries_index, size='small')
-    # plt.xlabel('Destination')
-    # plt.ylabel('age')
-    # plt.title('Destination and age in training data')
-    plt.show()
+    colors = ['r', 'k', 'b', 'g', 'c', 'm', 'y', 'b', 'k', 'k', 'k', 'r']
+    index = 0
+    width = 0.08
+    age_ranges = []
+    age_rects_data = []
+    age_range_list = get_age_range_list()
+    for age_range in age_range_list:
+        age_count_list = []
+        for destination in countries_index:
+            if destination == 'NDF':
+                continue
+            count = age_data.get(destination).get(age_range)
+            if count == None:
+                count = 0
+            age_count_list.append(count)
+
+        rects = plt.bar([x + index * width for x in range(len(age_count_list))],
+                        age_count_list, width, color=colors[index])
+        index += 1
+        age_rects_data.append(rects[0])
+        age_ranges.append(get_age_range_desc(age_range))
+
+    plt.xticks([x + 0.5 for x in range(len(countries_index) - 1)], countries_index[1:], size='small')
+    plt.legend(age_rects_data, age_ranges)
+    plt.xlabel('Destination')
+    plt.ylabel('#users of age')
+    plt.title('Destination and #users of age in training data')
+    # plt.show()
+    plt.savefig('../images/destination_users_of_age.png')
 
 
 def auto_label(rects):
