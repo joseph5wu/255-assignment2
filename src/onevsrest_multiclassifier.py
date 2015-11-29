@@ -3,18 +3,20 @@ import evaluate
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multiclass import OneVsRestClassifier
 
-train_x, train_y, validation_x, validation_y, test_data, basic_users_info, label_encoder = prepare.get_label_encode_data()
+train_data, validation_data, test_data, basic_users_info = prepare.get_data()
+label_encoder = {}
+train_x, train_y = prepare.get_exclude_ndf_x(train_data, basic_users_info, label_encoder)
+validation_x, validation_y = prepare.get_exclude_ndf_x(validation_data, basic_users_info, label_encoder)
 
 rf = OneVsRestClassifier(RandomForestClassifier(n_estimators=11, criterion='gini')).fit(train_x, train_y)
 validation_predict = rf.predict(validation_x)
 validation_predict_proba = rf.predict_proba(validation_x)
-#print validation_predict_proba
+# print validation_predict_proba
 class_order = rf.classes_
-print class_order
 
-#print validation_predict
 
-def candidateClasses(predict):
+# print validation_predict
+def candidate_classes(predict):
 	country = []
 	for samples in predict:
 		local = [i[0] for i in sorted(enumerate(samples), key = lambda x:x[1])]
@@ -26,15 +28,13 @@ def candidateClasses(predict):
 	#print country
 	return country
 
-
-predict_list = candidateClasses(validation_predict_proba)
+predict_list = candidate_classes(validation_predict_proba)
 
 #print predict_list
-
-ndcg = evaluate.ndcg(predict_list, validation_y)
+ndcg = evaluate.ndcg(predict_list, validation_data)
 print(ndcg)
 
-test_x = prepare.get_not_ndf_test_x(test_data, basic_users_info, label_encoder)
-test_predict_proba = rf.predict_proba(test_x)
-test_predict_list = candidateClasses(test_predict_proba)
+test_x = prepare.get_exclude_ndf_test_x(test_data, basic_users_info, label_encoder)
+test_predict = rf.predict(test_x)
+test_predict_list = [[predict] for predict in test_predict]
 prepare.get_test_predict(test_data, test_predict_list)

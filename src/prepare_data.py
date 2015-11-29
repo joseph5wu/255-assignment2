@@ -4,6 +4,7 @@ import load_data as load
 import random
 import csv
 
+
 def get_data():
     # load data from train set
     users_data, users_dict = load.get_train_users_data()
@@ -19,35 +20,7 @@ def get_data():
     validation_data = users_data[users_data_size * 9 / 10:]
     test_data = test_users_data
 
-    # train_y = [user[load.USERS_COUNTRY_DESTINATION] for user in train_data]
-    # validation_y = [user[load.USERS_COUNTRY_DESTINATION] for user in validation_data]
-    train_x = []
-    train_y = []
-    for user in train_data:
-        destination = user[load.USERS_COUNTRY_DESTINATION]
-        if destination == 'NDF':
-            continue
-        train_x.append(get_record(user, basic_users_info))
-        train_y.append(destination)
-
-    validation_x = []
-    validation_y = []
-    for user in validation_data:
-        destination = user[load.USERS_COUNTRY_DESTINATION]
-        if destination == 'NDF':
-            continue
-        validation_x.append(get_record(user, basic_users_info))
-        validation_y.append(destination)
-
-    return train_x, train_y, validation_x, validation_y, test_data, basic_users_info
-
-
-def get_label_encode_data():
-    label_encoder = {}
-    train_x, train_y, validation_x, validation_y, test_data, basic_users_info = get_data()
-    label_encode(train_x, label_encoder)
-    label_encode(validation_x, label_encoder)
-    return train_x, train_y, validation_x, validation_y, test_data, basic_users_info, label_encoder
+    return train_data, validation_data, test_data, basic_users_info
 
 
 def label_encode(data, label_encoder):
@@ -62,7 +35,6 @@ def label_encode(data, label_encoder):
                     datum[i] = label_encoder[i][value]
                 else:
                     datum[i] = label_encoder[i][value]
-
 
 
 def get_basic_users_info(user_data):
@@ -106,7 +78,21 @@ def get_record(user, basic_users_info):
             affiliate_provider, first_device_type, first_browser]
 
 
-def get_not_ndf_test_x(test_data, basic_users_info, label_encoder):
+def get_exclude_ndf_x(data, basic_users_info, label_encoder):
+    x = []
+    y = []
+    for user in data:
+        destination = user[load.USERS_COUNTRY_DESTINATION]
+        if destination == 'NDF':
+            continue
+        x.append(get_record(user, basic_users_info))
+        y.append(destination)
+
+    label_encode(x, label_encoder)
+    return x, y
+
+
+def get_exclude_ndf_test_x(test_data, basic_users_info, label_encoder):
     test_x = []
     for user in test_data:
         date_first_booking = user[load.USERS_DATE_FIRST_BOOKING]
