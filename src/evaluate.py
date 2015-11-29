@@ -21,3 +21,14 @@ def ndcg(predict_list, data):
 
     return total_dcg / len(data)
 
+
+def candidate_classes(predict, class_order):
+    country = []
+    for samples in predict:
+        local = [i[0] for i in sorted(enumerate(samples), key = lambda x:x[1])]
+        l = []
+        for k in range(5):
+            l.append(local[len(local) - k - 1])
+        country.append([class_order[j] for j in l])
+    return country
+
