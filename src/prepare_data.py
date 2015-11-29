@@ -12,7 +12,6 @@ def get_data():
     random.seed(0)
     random.shuffle(users_data)
     users_data_size = len(users_data)
-    print(users_data_size)
 
     basic_users_info = get_basic_users_info(users_data)
 
