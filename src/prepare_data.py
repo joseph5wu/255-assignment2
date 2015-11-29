@@ -2,7 +2,7 @@ __author__ = 'joseph'
 
 import load_data as load
 import random
-
+import csv
 
 def get_data():
     # load data from train set
@@ -39,15 +39,15 @@ def get_data():
         validation_x.append(get_record(user, basic_users_info))
         validation_y.append(destination)
 
-    return train_x, train_y, validation_x, validation_y, test_data
+    return train_x, train_y, validation_x, validation_y, test_data, basic_users_info
 
 
 def get_label_encode_data():
     label_encoder = {}
-    train_x, train_y, validation_x, validation_y, test_data = get_data()
+    train_x, train_y, validation_x, validation_y, test_data, basic_users_info = get_data()
     label_encode(train_x, label_encoder)
     label_encode(validation_x, label_encoder)
-    return train_x, train_y, validation_x, validation_y, test_data, label_encoder
+    return train_x, train_y, validation_x, validation_y, test_data, basic_users_info, label_encoder
 
 
 def label_encode(data, label_encoder):
@@ -105,4 +105,32 @@ def get_record(user, basic_users_info):
     return [1, year, month, book_year, book_month, gender, age, signup_method, language,
             affiliate_provider, first_device_type, first_browser]
 
+
+def get_not_ndf_test_x(test_data, basic_users_info, label_encoder):
+    test_x = []
+    for user in test_data:
+        date_first_booking = user[load.USERS_DATE_FIRST_BOOKING]
+        if date_first_booking is None or date_first_booking == '':
+            continue
+        test_x.append(get_record(user, basic_users_info))
+
+    label_encode(test_x, label_encoder)
+    return test_x
+
+
+def get_test_predict(test_data, test_predict):
+    with open('../data/test_predict.csv', 'wb') as predict_file:
+        writer = csv.writer(predict_file)
+        writer.writerow(['id', 'country'])
+        index = 0
+        for data in test_data:
+            user_id = data[load.USERS_ID]
+            date_first_booking = data[load.USERS_DATE_FIRST_BOOKING]
+            if date_first_booking is None or date_first_booking == '':
+                writer.writerow([user_id, 'NDF'])
+            else:
+                predict_list = test_predict[index]
+                for predict in predict_list:
+                    writer.writerow([user_id, predict])
+                index += 1
 

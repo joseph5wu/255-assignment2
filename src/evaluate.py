@@ -14,3 +14,4 @@ def ndcg(predict_list, y_list):
                 break
 
     return total_dcg / len(y_list)
+
