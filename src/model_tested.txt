@@ -5,3 +5,5 @@
 -- naive_bayes.MultinomialNB
 -- adaboost
 -- decision tree
+-- linear discriminant analysis
+-- GradientBoostingClassifier
