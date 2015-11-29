@@ -26,10 +26,11 @@ def candidateClasses(predict):
 	#print country
 	return country
 
-
 predict_list = candidateClasses(validation_predict_proba)
-
-#print predict_list
-
 ndcg = evaluate.ndcg(predict_list, validation_y)
 print(ndcg)
+
+test_x = prepare.get_not_ndf_test_x(test_data, basic_users_info, label_encoder)
+test_predict_proba = rf.predict_proba(test_x)
+test_predict_list = candidateClasses(test_predict_proba)
+prepare.get_test_predict(test_data, test_predict_list)
