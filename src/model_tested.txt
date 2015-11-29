@@ -5,5 +5,5 @@
 -- naive_bayes.MultinomialNB
 -- adaboost
 -- decision tree
--- linear discriminant analysis
--- GradientBoostingClassifier
+-- linear discriminant analysis : 0.93227
+-- GradientBoostingClassifier : 0.93313
