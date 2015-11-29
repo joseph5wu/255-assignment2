@@ -20,21 +20,25 @@ def get_data():
     validation_data = users_data[users_data_size * 9 / 10:]
     test_data = test_users_data
 
-    train_y = [user[load.USERS_COUNTRY_DESTINATION] for user in train_data]
-    validation_y = [user[load.USERS_COUNTRY_DESTINATION] for user in validation_data]
+    # train_y = [user[load.USERS_COUNTRY_DESTINATION] for user in train_data]
+    # validation_y = [user[load.USERS_COUNTRY_DESTINATION] for user in validation_data]
     train_x = []
+    train_y = []
     for user in train_data:
         destination = user[load.USERS_COUNTRY_DESTINATION]
         if destination == 'NDF':
             continue
         train_x.append(get_record(user, basic_users_info))
+        train_y.append(destination)
 
     validation_x = []
+    validation_y = []
     for user in validation_data:
         destination = user[load.USERS_COUNTRY_DESTINATION]
         if destination == 'NDF':
             continue
         validation_x.append(get_record(user, basic_users_info))
+        validation_y.append(destination)
 
     return train_x, train_y, validation_x, validation_y, test_data
 
