@@ -14,6 +14,7 @@ clf = OneVsRestClassifier(SVC()).fit(train_x, train_y)
 #clf.decision_function_shape = "ovr"
 
 #validation_predict = clf.predict(validation_x)
+
 validation_predict_proba = clf.predict_proba(validation_x)
 class_order = clf.classes_
 
