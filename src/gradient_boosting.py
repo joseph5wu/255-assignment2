@@ -14,7 +14,7 @@ validation_predict_proba = rf.predict_proba(validation_x)
 # print validation_predict_proba
 class_order = rf.classes_
 
-predict_list = evaluate.candidate_classes(validation_predict_proba)
+predict_list = evaluate.candidate_classes(validation_predict_proba, class_order)
 
 #print predict_list
 ndcg = evaluate.ndcg(predict_list, validation_data)
@@ -22,5 +22,5 @@ print(ndcg)
 
 test_x = prepare.get_exclude_ndf_test_x(test_data, basic_users_info, label_encoder)
 test_predict = rf.predict_proba(test_x)
-test_predict_list = evaluate.candidate_classes(test_predict)
+test_predict_list = evaluate.candidate_classes(test_predict, class_order)
 prepare.get_test_predict(test_data, test_predict_list)
