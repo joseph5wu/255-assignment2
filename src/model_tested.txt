@@ -1,0 +1,6 @@
+#tested models#
+-- random forest
+-- k nearest centroids
+-- k nearest neighbours
+-- naive_bayes.MultinomialNB
+-- 
