@@ -3,3 +3,4 @@
 .git
 data/
 src/*.pyc
+.ipynb_checkpoints/

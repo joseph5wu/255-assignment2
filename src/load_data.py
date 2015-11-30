@@ -174,3 +174,91 @@ def get_session_data():
                 session_data[user_id] += secs
             total_time += secs
     return session_data, total_time, users_count
+
+
+def calculate_destination_times(is_train=True, is_unique_in_test=False):
+    destination_dict = defaultdict(int)
+    if is_train:
+        with open('../data/train_users.csv', 'rb') as users_file:
+            reader = csv.reader(users_file)
+            counts = 0
+            for row in reader:
+                counts += 1
+                if counts == 1:
+                    continue
+                destination = row[USERS_COUNTRY_DESTINATION]
+                if destination not in destination_dict:
+                    destination_dict.setdefault(destination, 1)
+                else:
+                    destination_dict[destination] += 1
+    else:
+        with open('../data/test_predict.csv', 'rb') as users_file:
+            reader = csv.reader(users_file)
+            counts = 0
+            prev_user_id = None
+            for row in reader:
+                counts += 1
+                if counts == 1:
+                    continue
+                user = row[0]
+                if prev_user_id is None or prev_user_id != user:
+                    prev_user_id = user
+                elif is_unique_in_test:
+                    continue
+
+                destination = row[1]
+                if destination not in destination_dict:
+                    destination_dict.setdefault(destination, 1)
+                else:
+                    destination_dict[destination] += 1
+    return destination_dict
+
+destination_dict = calculate_destination_times()
+names = []
+ids = []
+rates = []
+total = 0
+for destination in destination_dict:
+    total += destination_dict.get(destination)
+    if destination == 'other' or destination == 'NDF':
+        continue
+    rates.append(destination_dict.get(destination))
+    if destination == 'FR':
+        names.append('France')
+        ids.append('FRA')
+    elif destination == 'NL':
+        names.append('Netherlands')
+        ids.append('NLD')
+    elif destination == 'PT':
+        names.append('Portugal')
+        ids.append('PRT')
+    elif destination == 'CA':
+        names.append('Canada')
+        ids.append('CAN')
+    elif destination == 'DE':
+        names.append('Germany')
+        ids.append('DEU')
+    elif destination == 'IT':
+        names.append('Italy')
+        ids.append('ITA')
+    elif destination == 'US':
+        names.append('United States of America')
+        ids.append('USA')
+    elif destination == 'AU':
+        names.append('Australia')
+        ids.append('AUS')
+    elif destination == 'GB':
+        names.append('United Kingdom')
+        ids.append('GBR')
+    elif destination == 'ES':
+        names.append('Spain')
+        ids.append('ESP')
+
+
+# for i in range(len(rates)):
+#     rates[i] = float(rates[i]) / total
+print names
+print ids
+print rates
+# print(calculate_destination_times(False))
+# print(calculate_destination_times(False, True))
