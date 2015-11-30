@@ -10,7 +10,7 @@ label_encoder = {}
 train_x, train_y = prepare.get_exclude_ndf_x(train_data, basic_users_info, label_encoder)
 validation_x, validation_y = prepare.get_exclude_ndf_x(validation_data, basic_users_info, label_encoder)
 
-clf = SVC()
+clf = OneVsRestClassifier(SVC())
 clf.fit(train_x, train_y)
 # validation_predict = clf.predict(validation_x)
 validation_predict_proba = clf.predict_proba(validation_x)
