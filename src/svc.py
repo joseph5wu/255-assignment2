@@ -9,10 +9,17 @@ train_data, validation_data, test_data, basic_users_info = prepare.get_data()
 label_encoder = {}
 train_x, train_y = prepare.get_exclude_ndf_x(train_data, basic_users_info, label_encoder)
 validation_x, validation_y = prepare.get_exclude_ndf_x(validation_data, basic_users_info, label_encoder)
+print "start fitting"
+clf = OneVsRestClassifier(SVC(probability=True, random_state=0)).fit(train_x, train_y)
+print "end fitting"
+#clf.decision_function_shape = "ovr"
+
+#validation_predict = clf.predict(validation_x)
 
 clf = OneVsRestClassifier(SVC())
 clf.fit(train_x, train_y)
 # validation_predict = clf.predict(validation_x)
+
 validation_predict_proba = clf.predict_proba(validation_x)
 class_order = clf.classes_
 

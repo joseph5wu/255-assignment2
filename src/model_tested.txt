@@ -6,4 +6,4 @@
 -- adaboost
 -- decision tree
 -- linear discriminant analysis : 0.93227
--- GradientBoostingClassifier : 0.93313
+-- GradientBoostingClassifier : 0.93313 n_estimator = 11
