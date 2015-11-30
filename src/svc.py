@@ -16,6 +16,10 @@ print "end fitting"
 
 #validation_predict = clf.predict(validation_x)
 
+clf = OneVsRestClassifier(SVC())
+clf.fit(train_x, train_y)
+# validation_predict = clf.predict(validation_x)
+
 validation_predict_proba = clf.predict_proba(validation_x)
 class_order = clf.classes_
 
