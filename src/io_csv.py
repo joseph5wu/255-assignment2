@@ -499,10 +499,14 @@ SESSION_DETAIL = 3
 SESSION_DEVICE_TYPE = 4
 SESSION_SECS_ELAPSED = 5
 session_data = defaultdict(lambda: defaultdict(float))
+action_data = defaultdict(int)
 def get_session_data():
     with open('../data/sessions.csv', 'rb') as session_file:
         reader = csv.reader(session_file)
         counts = 0
+        actions = set()
+        prev_user_id = None
+        users_count = 0
         for row in reader:
             counts += 1
             if counts == 1:
@@ -516,6 +520,30 @@ def get_session_data():
             if detail and detail != '' and detail != '-unknown-':
                 action = detail
 
+            if prev_user_id is None:
+                prev_user_id = userId
+                users_count += 1
+            if prev_user_id != userId:
+                for a in actions:
+                    if a not in action_data:
+                        action_data.setdefault(a, 1)
+                    else:
+                        action_data[a] += 1
+                actions.clear()
+                prev_user_id = userId
+                users_count += 1
+
+            # if action not in action_data:
+            #     dict = defaultdict()
+            #     dict.setdefault('times', 1)
+            #     dict.setdefault('seconds', secs)
+            #     action_data.setdefault(action, dict)
+            # else:
+            #     action_data[action]['times'] += 1
+            #     action_data[action]['seconds'] += secs
+            if action not in actions:
+                actions.add(action)
+
             if userId not in session_data:
                 action_dict = defaultdict(float)
                 action_dict.setdefault(action, secs)
@@ -527,10 +555,18 @@ def get_session_data():
                 else:
                     action_dict[action] += secs
 
-get_countries_data()
-get_users_data()
-# analyze_users_data(users_data)
-analyze_distance_age(countries_dict, users_data)
+        # sorted(cityPopulation.iteritems(),key=lambda (k,v): v[0],reverse=True)
+        print([(k, action_data[k]) for k in sorted(action_data, key=action_data.get, reverse=True)])
+        print(users_count)
+
+
+
+# get_countries_data()
+# get_users_data()
+# # analyze_users_data(users_data)
+# analyze_distance_age(countries_dict, users_data)
 
 # get_bkts_data()
 # analyze_age_bkts_data(age_bkts_data)
+
+get_session_data()

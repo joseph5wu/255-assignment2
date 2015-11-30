@@ -18,7 +18,8 @@ def get_data():
 
     basic_users_info = get_basic_users_info(users_data)
 
-    train_data = users_data[:users_data_size * 9 / 10]
+    # train_data = users_data[:users_data_size * 9 / 10]
+    train_data = users_data
     validation_data = users_data[users_data_size * 9 / 10:]
     test_data = test_users_data
 
@@ -48,7 +49,9 @@ def get_basic_users_info(user_data):
             age_total += float(age)
             age_count += 1
 
+    # session_data, total_time, users_count = load.get_session_data()
     return [age_total / age_count]
+    # return [age_total / age_count, session_data, float(total_time / users_count)]
 
 
 def get_record(user, basic_users_info):
@@ -86,6 +89,14 @@ def get_record(user, basic_users_info):
     first_affiliate_tracked = user[load.USERS_FIRST_AFFILIATE_TRACKED]
     signup_app = user[load.USERS_SIGNUP_APP]
 
+    # get current user search time ratio
+    # session_data = basic_users_info[1]
+    # average_search_time = basic_users_info[2]
+    # search_time_ratio = 1
+    # user_id = user[load.USERS_ID]
+    # if user_id in session_data:
+    #     search_time_ratio = float(session_data[user_id] / average_search_time)
+    #     print(user_id, search_time_ratio)
     return [month, book_month, age, language,
             affiliate_provider, first_device_type, first_browser]
     # [year, month, book_year, book_month, gender, age, signup_method, language,
