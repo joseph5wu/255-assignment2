@@ -86,8 +86,7 @@ def get_record(user, basic_users_info):
     first_affiliate_tracked = user[load.USERS_FIRST_AFFILIATE_TRACKED]
     signup_app = user[load.USERS_SIGNUP_APP]
 
-    return [month, book_month, age, language,
-            affiliate_provider, first_device_type, first_browser]
+    return [month, book_month, age, language, affiliate_provider, first_device_type, first_browser]
     # [year, month, book_year, book_month, gender, age, signup_method, language,
     #         affiliate_provider, first_device_type, first_browser]
     # return [year, affiliate_channel, month, first_device_type, book_year, first_affiliate_tracked, book_month,

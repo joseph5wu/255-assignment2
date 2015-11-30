@@ -8,7 +8,7 @@ label_encoder = {}
 train_x, train_y = prepare.get_exclude_ndf_x(train_data, basic_users_info, label_encoder)
 validation_x, validation_y = prepare.get_exclude_ndf_x(validation_data, basic_users_info, label_encoder)
 
-rf = OneVsRestClassifier(GradientBoostingClassifier(n_estimators=11)).fit(train_x, train_y)
+rf = OneVsRestClassifier(GradientBoostingClassifier(n_estimators=110)).fit(train_x, train_y)
 validation_predict = rf.predict(validation_x)
 validation_predict_proba = rf.predict_proba(validation_x)
 # print validation_predict_proba
