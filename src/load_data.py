@@ -138,7 +138,10 @@ SESSION_SECS_ELAPSED = 5
 
 
 def get_session_data():
-    session_data = defaultdict(lambda: defaultdict(float))
+    session_data = defaultdict(float)
+    total_time = 0
+    users_count = 0
+    prev_user_id = None
     with open('../data/sessions.csv', 'rb') as session_file:
         reader = csv.reader(session_file)
         counts = 0
@@ -148,21 +151,26 @@ def get_session_data():
                 continue
 
             user_id, action, detail = row[SESSION_USER_ID], row[SESSION_ACTION], row[SESSION_DETAIL]
+            if detail and detail != '' and detail != '-unknown-':
+                action = detail
+
+            if action != 'view_search_results':
+                continue
+
+            if prev_user_id is None:
+                prev_user_id = user_id
+            if prev_user_id != user_id:
+                users_count += 1
+                prev_user_id = user_id
+
             if row[SESSION_SECS_ELAPSED] and row[SESSION_SECS_ELAPSED] != '':
                 secs = float(row[SESSION_SECS_ELAPSED])
             else:
                 secs = 0
-            if detail and detail != '' and detail != '-unknown-':
-                action = detail
 
             if user_id not in session_data:
-                action_dict = defaultdict(float)
-                action_dict.setdefault(action, secs)
-                session_data.setdefault(user_id, action_dict)
+                session_data.setdefault(user_id, secs)
             else:
-                action_dict = session_data.get(user_id)
-                if action not in action_dict:
-                    action_dict.setdefault(action, secs)
-                else:
-                    action_dict[action] += secs
-    return session_data
+                session_data[user_id] += secs
+            total_time += secs
+    return session_data, total_time, users_count
