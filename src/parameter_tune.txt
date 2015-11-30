@@ -1,3 +1,12 @@
+*****
+The best Kaggle result:
+Use all the features, set learning_rate = 0.05, n_estimators = 11. Score: 0.93328.
+learning_rate = 0.1 & n_estimators = 11 gives worse score 0.93325.
+
+
+
+
+
 The best of “n_estimators = 35” on validation set.
 34   0.925062307898
 35   0.925062307898
@@ -190,4 +199,5 @@ learning_rate = 0.01 ->
 warm_start doesn’t affect the model.
 
 max_depth default is the best.
+
 
