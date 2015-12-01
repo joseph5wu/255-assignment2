@@ -1,0 +1,13 @@
+v.	1.abstract
+v.	2.introduction (define the problem)
+	3.current solutions (related work)
+j.	4.dataset characteristics & feature picking (we pruned our data frame based on variances) (plots)
+wjv	5.methodology (model choosing 
+				--> general direction: classification v.
+				--> knn vs. guassian naive bayse vs. gradient boosting) j. w. v.
+				--> oneVsRest w.
+w.	6.parameter tuning (plots)
+j.	7.evaluation (introduce the metric)
+v.	8.conclusion
+w.	9.(maybe) future work
+	10.refs
